@@ -14,7 +14,7 @@ To get multiple reports as well as a merged report containing the info from all 
 
 To get the reports, run 
 
-    $ python scraper.py -t [textfile name] -wl [window limit]
+    $ python scraper.py -t [textfile name] (-wl [window limit])
 
 The program will open multiple download windows for the reports, and the window limit is the number of download windows that can be open at once. The default is 5 windows.
 
