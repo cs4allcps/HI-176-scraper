@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
 from schools import schools
 import getpass, os, sys, time, datetime, shutil
 
@@ -8,15 +9,15 @@ reportFile = None
 downloadTime = datetime.datetime.now().strftime('%m-%d-%y--%H-%M')
 folder = 'sim_downloads'
 windowLimit = 5
-tempfolder = 'temp_folder' + downloadTime
+tempfolder = 'temp_folder--' + downloadTime
 windowLimit = 5
-
-# if folders do not exists, make them
-if not os.path.exists(folder):
-    os.makedirs(folder)
-
-if not os.path.exists(tempfolder):
-    os.makedirs(tempfolder)
+loggedIn = False
+schoollist = []
+prettylist = []
+notfound = []
+windows = 0
+running = 0
+completed = 0
 
 # will be replaced with argparse soon
 # -t : allows you to use a list of schools from a text file
@@ -32,19 +33,8 @@ for i in range(len(sys.argv)):
 
 # set options for the webdriver
 options = webdriver.ChromeOptions()
-print  os.getcwd() + '\\' + tempfolder
 prefs = {"download.default_directory" : os.getcwd() +'\\'+ tempfolder}
 options.add_experimental_option("prefs", prefs)
-
-# collect username and password
-user = raw_input("USERNAME: ")
-password = getpass.getpass("PASSWORD: ")
-schoollist = []
-prettylist = []
-notfound = []
-windows = 0
-running = 0
-completed = 0
 
 # if no text file was provided, let the user select the schools they want
 if not reportFile:
@@ -81,26 +71,50 @@ else:
             schoollist.append(lines[i].replace("\n", " - School View"))
             prettylist.append(lines[i].rstrip("\n"))
 
-# create driver
-driver = webdriver.Chrome(chrome_options=options)
-driver.get("http://sim.cps.k12.il.us/")
+# ATTEMT TO LOGIN
+while not loggedIn:
+    # collect username and password
+    user = raw_input("USERNAME: ")
+    password = getpass.getpass("PASSWORD: ")
+    # create driver
+    driver = webdriver.Chrome(chrome_options=options)
+    driver.get("http://sim.cps.k12.il.us/")
 
-# LOGIN PAGE
-print "Signing in"
-# username
-elem = driver.find_element_by_name("user")
-elem.clear()
-elem.send_keys(user)
-# password
-elem = driver.find_element_by_name("pass")
-elem.clear()
-elem.send_keys(password)
-# domain
-elem = driver.find_element_by_name("domn")
-elem.clear()
-elem.send_keys("ADMIN")
-elem.send_keys(Keys.RETURN)
+    # LOGIN PAGE
+    print "\nAttempting to sign in"
+    # username
+    elem = driver.find_element_by_name("user")
+    elem.clear()
+    elem.send_keys(user)
+    # password
+    elem = driver.find_element_by_name("pass")
+    elem.clear()
+    elem.send_keys(password)
+    # domain
+    elem = driver.find_element_by_name("domn")
+    elem.clear()
+    elem.send_keys("ADMIN")
+    elem.send_keys(Keys.RETURN)
 
+    # check for error message
+    try:
+        driver.find_element_by_id("errmsg")
+        # if error message exists, then close window and ask for new login info
+        print "Incorrect username or password"
+        driver.quit()
+    except NoSuchElementException:
+        # error message does not exist and the user has logged in
+        print "Logged in\n"
+        loggedIn = True
+
+# if folders do not exists, make them
+if not os.path.exists(folder):
+    os.makedirs(folder)
+
+if not os.path.exists(tempfolder):
+    os.makedirs(tempfolder)
+
+# work through schools and navigate through their respective pages
 for i in range(len(schoollist)):
     pretty = prettylist[i]
     selection = schoollist[i]
@@ -142,7 +156,7 @@ for i in range(len(schoollist)):
         # run query
         driver.find_element_by_name("QAID_cmdSubmit").click()
 
-        print "Outputting Report\n"
+        print "Outputting report\n"
 
         # Check for any windows that have downloaded reports
         # If the report has been downloaded close the window`
@@ -174,13 +188,12 @@ for i in range(len(schoollist)):
         notfound.append(selection)
 
 
-path = 'temp_folder\\'
+path = tempfolder + '\\'
 newpath = 'sim_downloads\\'
 num_files = 0
 filelist = []
 
 print 'Waiting for file(s)'
-
 while num_files != len(schoollist):
     filelist = [f for f in os.listdir(path)
                     if os.path.isfile(os.path.join(path,f))]
@@ -188,6 +201,8 @@ while num_files != len(schoollist):
 
 print "All file(s) downloaded"
 time.sleep(1)
+print "Closing Windows"
+driver.quit()
 filelist = [f for f in os.listdir(path)
                 if os.path.isfile(os.path.join(path,f))]
 downloadTime = datetime.datetime.now().strftime('%m-%d-%y--%H-%M')
@@ -205,6 +220,7 @@ if reportFile:
 
 for report in filelist:
     count = 0
+    unkownCount = 0
     with open(path + report, 'rb') as tsvfile:
         for row in tsvfile:
             count += 1
@@ -212,18 +228,9 @@ for report in filelist:
                 schoolName = row.rstrip().replace('"', '')
         tsvfile.close()
         if not schoolName:
-            schoolName = "unknown"
+            schoolName = "unknown" + unkownCount
+            unkownCount += 1
     os.rename(path + report, newpath+schoolName+'--'+downloadTime+".tsv")
-
-
-
 
 shutil.rmtree(path)
 print "Files merged"
-print "Closing Windows"
-while len(driver.window_handles) > 1:
-    driver.switch_to_window(driver.window_handles[1])
-    driver.close()
-
-driver.switch_to_window(driver.window_handles[0])
-driver.close()
