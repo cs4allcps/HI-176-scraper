@@ -21,3 +21,4 @@ The program will open multiple download windows for the reports, and the window 
 # Future Additions
 - Threading: threading will hopefully increase the efficiency of the downloading/scraping process
 - Add an option to use the Firefox webdriver instead of Chome webdriver
+- Add functionality to update schools.py
