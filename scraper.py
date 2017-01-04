@@ -42,25 +42,37 @@ if not reportFile:
     found = 0
     print "SCHOOL SEARCH"
     while not found:
+        matches = []
         search = raw_input("Search: ")
-        matches = [s for s in schools if search.lower() in s.lower()]
-        for i in range(len(matches)):
-            print i, matches[i][:-14]
-        print '\nType number of option to select school'
-        print 'If schools is not available, simply hit enter and you can search again'
-        selection = raw_input("Selection number: ")
+        # splits the search string so that it can search the schools using
+        # multiple keywords
+        searchStrings = search.split()
+        for ss in searchStrings:
+            ssmatches = [s for s in schools if ss.lower() in s.lower()]
+            matches += ssmatches
+        # this eliminates any duplicates from the matches list
+        matches = list(set(matches))
+        if len(matches) >= 1:
+            for i in range(len(matches)):
+                print i, matches[i][:-14]
+            print '\nType number of option to select school'
+            print 'If schools is not available, simply hit enter and you can search again'
+            selection = raw_input("Selection number: ")
 
-        if selection == '':
-            print "No selection. Search again."
-        elif int(selection) in range(len(matches)):
-            selection = matches[int(selection)]
-            schoollist.append(selection)
-            prettylist.append(selection[:-14]) # = selection[:-14]
-            found = 1
-            print "Selected:",prettylist[0]
-        elif int(selection) < 0 or int(selection) >= len(matches):
-            print "Invalid choice number. Seach again."
-        print
+            if selection == '':
+                print "No selection. Search again."
+            elif int(selection) in range(len(matches)):
+                selection = matches[int(selection)]
+                schoollist.append(selection)
+                prettylist.append(selection[:-14]) # = selection[:-14]
+                found = 1
+                print "Selected:",prettylist[0]
+            elif int(selection) < 0 or int(selection) >= len(matches):
+                print "Invalid choice number. Seach again."
+            print
+        else:
+            print 'Did not find any schools related to that search\nPlease try again\n'
+
 
 else:
     print "READING FROM SCHOOL LIST"
