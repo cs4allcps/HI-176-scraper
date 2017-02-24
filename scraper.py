@@ -159,7 +159,7 @@ for i in range(len(schoollist)):
         time.sleep(2)
         driver.switch_to_window(driver.window_handles[running])
         # select across school option
-        driver.find_element_by_css_selector("input[type='radio'][value='Across School']").click()
+        # driver.find_element_by_css_selector("input[type='radio'][value='Across School']").click()
         # reveal output options
         driver.find_element_by_id("QAID_OutputSection_IMG").click()
         # select csv output
