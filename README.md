@@ -14,7 +14,7 @@ To get multiple reports as well as a merged report containing the info from all 
 
 To get the reports, run
 
-    $ python scraper.py -t [textfile name] (-wl [window limit]) (-tc [thread count])
+    $ python scraper3.py -t [textfile name] (-wl [window limit]) (-tc [thread count])
 
 The program will open multiple download windows for the reports. The thread count limits the number of instances of the scraper that will be run at once. The default number of threads is 2. The window limit is the maximum number of windows that can be opened per instance of the scraper. The default window limit is 5 windows.
 
