@@ -14,9 +14,9 @@ To get multiple reports as well as a merged report containing the info from all 
 
 To get the reports, run
 
-    $ python scraper.py -t [textfile name] (-wl [window limit])
+    $ python scraper.py -t [textfile name] (-tc [thread count]) (-wl [window limit])
 
-The program will open multiple download windows for the reports, and the window limit is the number of download windows that can be open at once. The default is 5 windows.
+The program will run multiple threads with multiple download windows for the reports. The default number of threads is 2 but more can be run by using the -tc tag when calling scraper.py. The default number of windows is 5 windows per thread, but this can also be changed by using the -wl tag.
 
 # Additional Info:
 If schools.py is different from the list of schools on the SIM portal, use
@@ -25,6 +25,13 @@ If schools.py is different from the list of schools on the SIM portal, use
 
 to calibrate schools.py with the current list of schools.
 
+The HI-176 reports will originally be downloaded in a non-readable format. If you have a folder of these unedited reports, use this command
+
+    $ python cleanReports.py [folder name]
+
+to clean and merge the files.
+
+If you would like to gather reports for (nearly) all of the CPS high schools, use allCPSHS.txt as the text file for scraper.py. If you just want the CPS high schools with CS4All programs, use the file cs4allHS.txt with scraper.py.
+
 # Future Additions
-- Threading: threading will hopefully increase the efficiency of the downloading/scraping process
 - Add an option to use the Firefox webdriver instead of Chome webdriver
