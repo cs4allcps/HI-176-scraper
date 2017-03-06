@@ -33,5 +33,7 @@ to clean and merge the files.
 
 If you would like to gather reports for (nearly) all of the CPS high schools, use allCPSHS.txt as the text file for scraper.py. If you just want the CPS high schools with CS4All programs, use the file cs4allHS.txt with scraper.py.
 
+scraperCore.py contains many of the basic functions used to interface with the CPS SIM via Selenium. These functions can be used for other future scrapers.
+
 # Future Additions
 - Add an option to use the Firefox webdriver instead of Chome webdriver
